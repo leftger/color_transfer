@@ -1,1 +1,5 @@
 .DS_STORE
+.python-version
+Pipfile
+Pipfile.lock
+.vscode/

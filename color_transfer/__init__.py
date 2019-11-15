@@ -14,9 +14,9 @@ def color_transfer(source, target, clip=True, preserve_paper=True):
 	Parameters:
 	-------
 	source: NumPy array
-		OpenCV image in BGR color space (the source image)
+		OpenCV image in BGR (optionally A) color space (the source image)
 	target: NumPy array
-		OpenCV image in BGR color space (the target image)
+		OpenCV image in BGR (optionally A) color space (the target image)
 	clip: Should components of L*a*b* image be scaled by np.clip before 
 		converting back to BGR color space?
 		If False then components will be min-max scaled appropriately.
@@ -35,9 +35,15 @@ def color_transfer(source, target, clip=True, preserve_paper=True):
 	transfer: NumPy array
 		OpenCV image (w, h, 3) NumPy array (uint8)
 	"""
+	# extract alpha channel if present
+	alpha_channel = None
+	if source.shape[2] == 4:
+		alpha_channel = source[:,:,3]
+
 	# convert the images from the RGB to L*ab* color space, being
 	# sure to utilizing the floating point data type (note: OpenCV
 	# expects floats to be 32-bit, so use that instead of 64-bit)
+		
 	source = cv2.cvtColor(source, cv2.COLOR_BGR2LAB).astype("float32")
 	target = cv2.cvtColor(target, cv2.COLOR_BGR2LAB).astype("float32")
 
@@ -79,6 +85,9 @@ def color_transfer(source, target, clip=True, preserve_paper=True):
 	transfer = cv2.merge([l, a, b])
 	transfer = cv2.cvtColor(transfer.astype("uint8"), cv2.COLOR_LAB2BGR)
 	
+	if alpha_channel:
+		transfer = cv2.cvtColor(transfer, cv2.COLOR_BGR2BGRA)
+		transfer[:,:,3] = alpha_channel
 	# return the color transferred image
 	return transfer
 
